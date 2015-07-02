@@ -7,6 +7,49 @@ using UIKit;
 
 namespace ApplicationInsights
 {
+    // @interface MSAIObject : NSObject <NSCoding>
+    [BaseType (typeof(NSObject))]
+    interface MSAIObject : INSCoding
+    {
+        // -(MSAIOrderedDictionary *)serializeToDictionary;
+        [Export ("serializeToDictionary")]
+        MSAIOrderedDictionary SerializeToDictionary { get; }
+
+        // -(NSString *)serializeToString;
+        [Export ("serializeToString")]
+        string SerializeToString { get; }
+    }
+
+    // @interface MSAIUser : MSAIObject <NSCoding>
+    [BaseType (typeof(MSAIObject))]
+    interface MSAIUser : INSCoding
+    {
+        // @property (nonatomic, strong) NSString * accountAcquisitionDate;
+        [Export ("accountAcquisitionDate", ArgumentSemantic.Strong)]
+        string AccountAcquisitionDate { get; set; }
+
+        // @property (nonatomic, strong) NSString * accountId;
+        [Export ("accountId", ArgumentSemantic.Strong)]
+        string AccountId { get; set; }
+
+        // @property (nonatomic, strong) NSString * userAgent;
+        [Export ("userAgent", ArgumentSemantic.Strong)]
+        string UserAgent { get; set; }
+
+        // @property (nonatomic, strong) NSString * userId;
+        [Export ("userId", ArgumentSemantic.Strong)]
+        string UserId { get; set; }
+    }
+
+    // @interface MSAIOrderedDictionary : NSMutableDictionary
+    [BaseType (typeof(NSMutableDictionary))]
+    interface MSAIOrderedDictionary
+    {
+        // -(instancetype)initWithCapacity:(NSUInteger)numItems;
+        [Export ("initWithCapacity:")]
+        IntPtr Constructor(nuint numItems);
+    }
+
     // @interface MSAIApplicationInsights : NSObject
     [BaseType (typeof(NSObject))]
     interface MSAIApplicationInsights
@@ -83,14 +126,23 @@ namespace ApplicationInsights
         [Export ("setAutoSessionManagementDisabled:")]
         void SetAutoSessionManagementDisabled (bool autoSessionManagementDisabled);
 
-        // +(void)setUserId:(NSString *)userId;
+        // +(void)setUserId:(NSString *)userId __attribute__((deprecated("Use setUserWithConfigurationBlock: instead!")));
         [Static]
         [Export ("setUserId:")]
         void SetUserId (string userId);
 
-        // -(void)setUserId:(NSString *)userId;
+        // -(void)setUserId:(NSString *)userId __attribute__((deprecated("Use setUserWithConfigurationBlock: instead!")));
         //[Export ("setUserId:")]
         //void SetUserId (string userId);
+
+        // +(void)setUserWithConfigurationBlock:(void (^)(MSAIUser *))userConfigurationBlock;
+        [Static]
+        [Export ("setUserWithConfigurationBlock:")]
+        void SetUserWithConfigurationBlock (Action<MSAIUser> userConfigurationBlock);
+
+        // -(void)setUserWithConfigurationBlock:(void (^)(MSAIUser *))userConfigurationBlock;
+        //[Export ("setUserWithConfigurationBlock:")]
+        //void SetUserWithConfigurationBlock (Action<MSAIUser> userConfigurationBlock);
 
         // +(void)startNewSession;
         [Static]
@@ -127,15 +179,6 @@ namespace ApplicationInsights
         [Export ("debugLogEnabled")]
         bool DebugLogEnabled { [Bind ("isDebugLogEnabled")] get; set; }
 
-        // +(void)testIdentifier;
-        [Static]
-        [Export ("testIdentifier")]
-        void TestIdentifier ();
-
-        // -(void)testIdentifier;
-        //[Export ("testIdentifier")]
-        //void TestIdentifier ();
-
         // +(NSString *)version;
         [Static]
         [Export ("version")]
@@ -155,6 +198,55 @@ namespace ApplicationInsights
         //[Export ("build")]
         //[Verify (MethodToProperty)]
         //string Build { get; }
+    }
+
+    // @interface MSAICrashDetails : NSObject
+    [BaseType (typeof(NSObject))]
+    interface MSAICrashDetails
+    {
+        // @property (readonly, nonatomic, strong) NSString * incidentIdentifier;
+        [Export ("incidentIdentifier", ArgumentSemantic.Strong)]
+        string IncidentIdentifier { get; }
+
+        // @property (readonly, nonatomic, strong) NSString * reporterKey;
+        [Export ("reporterKey", ArgumentSemantic.Strong)]
+        string ReporterKey { get; }
+
+        // @property (readonly, nonatomic, strong) NSString * signal;
+        [Export ("signal", ArgumentSemantic.Strong)]
+        string Signal { get; }
+
+        // @property (readonly, nonatomic, strong) NSString * exceptionName;
+        [Export ("exceptionName", ArgumentSemantic.Strong)]
+        string ExceptionName { get; }
+
+        // @property (readonly, nonatomic, strong) NSString * exceptionReason;
+        [Export ("exceptionReason", ArgumentSemantic.Strong)]
+        string ExceptionReason { get; }
+
+        // @property (readonly, nonatomic, strong) NSDate * appStartTime;
+        [Export ("appStartTime", ArgumentSemantic.Strong)]
+        NSDate AppStartTime { get; }
+
+        // @property (readonly, nonatomic, strong) NSDate * crashTime;
+        [Export ("crashTime", ArgumentSemantic.Strong)]
+        NSDate CrashTime { get; }
+
+        // @property (readonly, nonatomic, strong) NSString * osVersion;
+        [Export ("osVersion", ArgumentSemantic.Strong)]
+        string OsVersion { get; }
+
+        // @property (readonly, nonatomic, strong) NSString * osBuild;
+        [Export ("osBuild", ArgumentSemantic.Strong)]
+        string OsBuild { get; }
+
+        // @property (readonly, nonatomic, strong) NSString * appBuild;
+        [Export ("appBuild", ArgumentSemantic.Strong)]
+        string AppBuild { get; }
+
+        // -(BOOL)isAppKill;
+        [Export ("isAppKill")]
+        bool IsAppKill { get; }
     }
 
     // @interface MSAICrashManager : NSObject
@@ -237,72 +329,6 @@ namespace ApplicationInsights
         bool ConsiderAppNotTerminatedCleanlyReportForCrashManager { get; }
     }
 
-    // @interface MSAICrashDetails : NSObject
-    [BaseType (typeof(NSObject))]
-    interface MSAICrashDetails
-    {
-        // @property (readonly, nonatomic, strong) NSString * incidentIdentifier;
-        [Export ("incidentIdentifier", ArgumentSemantic.Strong)]
-        string IncidentIdentifier { get; }
-
-        // @property (readonly, nonatomic, strong) NSString * reporterKey;
-        [Export ("reporterKey", ArgumentSemantic.Strong)]
-        string ReporterKey { get; }
-
-        // @property (readonly, nonatomic, strong) NSString * signal;
-        [Export ("signal", ArgumentSemantic.Strong)]
-        string Signal { get; }
-
-        // @property (readonly, nonatomic, strong) NSString * exceptionName;
-        [Export ("exceptionName", ArgumentSemantic.Strong)]
-        string ExceptionName { get; }
-
-        // @property (readonly, nonatomic, strong) NSString * exceptionReason;
-        [Export ("exceptionReason", ArgumentSemantic.Strong)]
-        string ExceptionReason { get; }
-
-        // @property (readonly, nonatomic, strong) NSDate * appStartTime;
-        [Export ("appStartTime", ArgumentSemantic.Strong)]
-        NSDate AppStartTime { get; }
-
-        // @property (readonly, nonatomic, strong) NSDate * crashTime;
-        [Export ("crashTime", ArgumentSemantic.Strong)]
-        NSDate CrashTime { get; }
-
-        // @property (readonly, nonatomic, strong) NSString * osVersion;
-        [Export ("osVersion", ArgumentSemantic.Strong)]
-        string OsVersion { get; }
-
-        // @property (readonly, nonatomic, strong) NSString * osBuild;
-        [Export ("osBuild", ArgumentSemantic.Strong)]
-        string OsBuild { get; }
-
-        // @property (readonly, nonatomic, strong) NSString * appBuild;
-        [Export ("appBuild", ArgumentSemantic.Strong)]
-        string AppBuild { get; }
-
-        // -(BOOL)isAppKill;
-        [Export ("isAppKill")]
-        bool IsAppKill { get; }
-    }
-
-    // @interface PageViewLogging (UIViewController)
-    [Category]
-    [BaseType (typeof(UIViewController))]
-    interface UIViewController_PageViewLogging
-    {
-    }
-
-    // @interface MSAICategoryContainer : NSObject
-    [BaseType (typeof(NSObject))]
-    interface MSAICategoryContainer
-    {
-        // +(void)activateCategory;
-        [Static]
-        [Export ("activateCategory")]
-        void ActivateCategory ();
-    }
-
     // @interface MSAITelemetryManager : NSObject
     [BaseType (typeof(NSObject))]
     interface MSAITelemetryManager
@@ -311,6 +337,15 @@ namespace ApplicationInsights
         [Static]
         [Export ("sharedManager")]
         MSAITelemetryManager SharedManager ();
+
+        // +(void)setCommonProperties:(NSDictionary *)commonProperties;
+        [Static]
+        [Export ("setCommonProperties:")]
+        void SetCommonProperties (NSDictionary commonProperties);
+
+        // @property (nonatomic, strong) NSDictionary * commonProperties;
+        [Export ("commonProperties", ArgumentSemantic.Strong)]
+        NSDictionary CommonProperties { get; set; }
 
         // +(void)trackEventWithName:(NSString *)eventName;
         [Static]
@@ -425,6 +460,4 @@ namespace ApplicationInsights
         [Field ("kMSAIErrorDomain")]
         NSString kMSAIErrorDomain { get; }
     }
-
 }
-
